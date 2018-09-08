@@ -1,0 +1,17 @@
+version: '2'
+services:
+
+    node-exporter:
+        image: prom/node-exporter:latest
+        ports:
+          - '9100:9100'
+
+    cadvisor:
+        image: google/cadvisor:latest
+        ports:
+            - "8090:8080"
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:rw
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro

@@ -1,0 +1,70 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      demo: 'demo-monitor'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alert-rules.yml"
+  # - "second.rules"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ["alertmanager:9093"]
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['%MASTER_NODE_PRIVATE_IP%:9090']
+
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'node-exporter'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+
+    relabel_configs:
+        # Only monitor instances with a Name starting with "docker-swarm-cluster"
+      - source_labels: [__meta_ec2_tag_Name]
+        regex: docker-swarm-cluster.*
+        action: keep
+        # Use the instance ID as the instance label
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'cadvisor'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 8090
+
+    relabel_configs:
+        # Only monitor instances with a Name starting with "docker-swarm-cluster"
+      - source_labels: [__meta_ec2_tag_Name]
+        regex: docker-swarm-cluster.*
+        action: keep
+        # Use the instance ID as the instance label
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance

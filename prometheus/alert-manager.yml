@@ -1,0 +1,26 @@
+global:
+  smtp_smarthost: 'mailslurper:2500'
+  smtp_from: 'alertmanager@example.org'
+  smtp_require_tls: false
+
+route:
+  receiver: mail # Fallback
+  routes:
+  - match:
+      severity: critical
+    continue: true
+    receiver: mail
+  - match:
+      severity: critical
+    receiver: slack
+
+receivers:
+- name: mail
+  email_configs:
+    - to: 'avijitsarkar123@gmail.com'
+- name: slack
+  slack_configs:
+    - send_resolved: true
+      username: 'AlertManager'
+      channel: '#avijit-kitchen-sink'
+      api_url: 'https://hooks.slack.com/services/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'
